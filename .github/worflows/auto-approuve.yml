@@ -1,0 +1,38 @@
+name: Auto Approve Syncro PRs
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  auto_approve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title for "Syncro"
+        run: |
+          if [[ ${{ github.event.pull_request.title }} == *"Syncro"* ]]; then
+            echo "PR title contains 'Syncro'"
+            echo "::set-output name=approval::true"
+          else
+            echo "PR title does not contain 'Syncro'"
+            echo "::set-output name=approval::false"
+          fi
+
+      - name: Auto Approve PR
+        if: ${{ steps.auto_approve.outputs.approval == 'true' }}
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pullRequest } = await github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            await github.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              event: 'APPROVE',
+              body: 'Auto-approved due to PR title containing "Syncro"'
+            });
