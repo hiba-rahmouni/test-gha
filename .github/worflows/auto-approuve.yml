@@ -1,4 +1,4 @@
-name: Auto Approve Syncro PRs
+name: Auto Approve Syncro PR
 on:
   pull_request:
     types:
